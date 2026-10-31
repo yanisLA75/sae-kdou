@@ -2,12 +2,85 @@
 <htlm lang="fr">
 <head>
 <meta charset="UTF-8">
-  <title>Rapport collectif</title>
+  <title>SAE S1-04 – KDou Rapport collectif</title>
+  <link rel="stylesheet" href="style.css">
+
   
 </head>
 
 <body>
   <h1>site rapport  collectif</h1>
+<header>
+  <h1>KDou : ce que révèlent ses données</h1>
+  <p class="intro">SAE S1-04, conception et interrogation d'une base de données. Rapport collectif de l'équipe <span> composer de Yanis Laoula Younes Léa et Merian de la classe 108</span>, IUT Paris Rives de Seine.</p>
+  <nav>
+    <a href="#contexte">Contexte</a>
+    <a href="#origine">Origine des produits</a>
+    <a href="#sante">Santé</a>
+    <a href="#offre">Offre commerciale</a>
+    <a href="#partenariat">Partenariat client</a>
+    <a href="#membres">Requêtes de l'équipe</a>
+  </nav>
+</header>
+<main>
+
+<section id="contexte">
+  <h2>Contexte</h2>
+  <p>KDou vend des produits d'épicerie fine achetés à des fournisseurs du monde entier, uniquement à des clients situés en France. L'entreprise veut mieux comprendre sa rentabilité et renforcer son image éco-responsable. Notre travail : exploiter ses données pour proposer des indicateurs utiles à cette évolution.</p>
+  <p>Deux règles de calcul reviennent dans tous nos résultats :</p>
+  <ul>
+    <li>prix de vente = coût d'achat × coefficient de marge (celui de la catégorie du produit) ;</li>
+    <li>chiffre d'affaires (CA) = prix de vente × quantité vendue, remise comprise, hors frais de port.</li>
+  </ul>
+</section>
+  
+  <section id="origine">
+  <h2>Origine des produits</h2>
+  <article>
+    <h3>Quel CA KDou réalise-t-il avec ses fournisseurs de l'Union européenne ?</h3>
+    <p><strong>Pourquoi c'est utile.</strong> Cet indicateur mesure la part des ventes qui repose sur des produits venus de l'UE, donc de circuits de transport plus courts et soumis aux mêmes normes. C'est un point de départ pour un discours sur la provenance.</p>
+    <pre>SELECT Round(Sum(dc.Quantité * p.CoutAchat * c.CoefMarge
+             * (1 - dc.[Remise (%)])), 2) AS CA_UE
+FROM (((DetailCommande AS dc
+  INNER JOIN Produit AS p ON dc.[Réf produit] = p.RefProd)
+  INNER JOIN Categorie AS c ON p.CodeCateg = c.CodeCateg)
+  INNER JOIN Fournisseur AS f ON p.NoFour = f.NoFour)
+  INNER JOIN Pays AS ps ON f.NoPays = ps.NoPays
+WHERE ps.UE = "Membre";</pre>
+    <p><strong>Résultat.</strong></p>
+    <p class="resultat">2 754 529,74 €</p>
+    <p><strong>Comment lire la requête.</strong> On relie chaque ligne de commande à son produit (prix), à sa catégorie (coefficient), puis à son fournisseur et à son pays pour ne garder que les pays membres de l'UE. Le <code>Sum</code> additionne ensuite le montant de toutes les lignes.</p>
+  </article>
+</section>
+  
+<section id="sante">
+  <h2>Santé</h2>
+  <article>
+    <h3>Quel CA annuel pour les desserts et les boissons ?</h3>
+    <p><strong>Pourquoi c'est utile.</strong> Desserts et boissons sont les catégories les plus sucrées de la gamme. Suivre leur poids année après année montre si KDou peut rééquilibrer son offre sans perdre de chiffre d'affaires.</p>
+    <pre>SELECT Year(cd.DateCde) AS annee,
+  Round(Sum(dc.Quantité * p.CoutAchat * c.CoefMarge
+        * (1 - dc.[Remise (%)])), 2) AS CA_ANNUEL
+FROM ((DetailCommande AS dc
+  INNER JOIN Produit AS p ON dc.[Réf produit] = p.RefProd)
+  INNER JOIN Categorie AS c ON p.CodeCateg = c.CodeCateg)
+  INNER JOIN Commande AS cd ON dc.[N° commande] = cd.[N° commande]
+WHERE c.NomCateg = "Desserts" OR c.NomCateg = "Boissons"
+GROUP BY Year(cd.DateCde)
+ORDER BY Year(cd.DateCde);</pre>
+    <p><strong>Résultat.</strong></p>
+    <div class="table-wrap">
+      <table>
+        <tr><th>Année</th><th>CA (€)</th></tr>
+        <tr><td>2020</td><td><span > 169 222</span></td></tr>
+        <tr><td>2021</td><td><span> 1 405 309</span></td></tr>
+        <tr><td>2022</td><td><span> 1 390</span></td></tr>
+      </table>
+    </div>
+    <p><strong>Comment lire la requête.</strong> Les lignes sont regroupées par année (<code>GROUP BY</code>) et le CA est additionné dans chaque groupe. Les deux catégories sont ici additionnées ensemble.</p>
+  </article>
+</section>
+  
 </body>
 
   
