@@ -148,19 +148,38 @@ ORDER BY Round(Sum(dc.Quantité * p.CoutAchat * c.CoefMarge * (1 - dc.[Remise (%
             </article>
             <article>
   <h3>Léa : quels sont les invendus ?</h3>
-  <p><strong>Objectif.</strong> Identifier les produits qui n'ont jamais été commandés.</p>
-  <p><strong>Pourquoi c'est utile.</strong> Cela permet à KDou de repérer les produits qui ne se vendent pas du tout et restent en stock. L'objectif est d'appliquer des baisses de prix ou des promotions pour vider ces stocks, réduire le gaspillage et libérer de la place pour des produits plus attractifs ou éco-responsables.</p>
+  <p>Objectif. Identifier les produits qui n'ont jamais été commandés.</p>
+  <p>Pourquoi c'est utile. Cela permet à KDou de repérer les produits qui ne se vendent pas du tout et restent en stock. L'objectif est d'appliquer des baisses de prix ou des promotions pour vider ces stocks, réduire le gaspillage et libérer de la place pour des produits plus attractifs ou éco-responsables.</p>
   <pre>SELECT p.NomProd, p.UnitStock, c.NomCateg
 FROM (Produit AS p
   INNER JOIN Categorie AS c ON p.CodeCateg = c.CodeCateg)
   LEFT JOIN DetailCommande AS dc ON p.RefProd = dc.[Réf produit]
 WHERE dc.[Réf produit] IS NULL;</pre>
-  <p><strong>Comment lire la requête.</strong> Le <code>LEFT JOIN</code> garde tous les produits, même ceux qui n'apparaissent dans aucune commande. Pour ceux-là, les colonnes de <code>DetailCommande</code> valent <code>NULL</code>, ce que le filtre <code>IS NULL</code> isole. La jointure avec <code>Categorie</code> ajoute le nom de la catégorie.</p>
-  <p><strong>Résultat.</strong> Extrait des premiers produits invendus :</p>
+  <p>Comment lire la requête. Le <code>LEFT JOIN</code> garde tous les produits, même ceux qui n'apparaissent dans aucune commande. Pour ceux-là, les colonnes de <code>DetailCommande</code> valent <code>NULL</code>, ce que le filtre <code>IS NULL</code> isole. La jointure avec <code>Categorie</code> ajoute le nom de la catégorie.</p>
+  <p> Extrait des premiers produits invendus :</p>
   <div class="table-wrap">
     <img src="img/requete-lea.webp" alt="Extrait des produits jamais commandés, avec leur stock et leur catégorie">
   </div>
 </article>
+            <article>
+  <h3>Meryan : quelles catégories rapportent le plus ?</h3>
+  <p><strong>Objectif.</strong> Calculer la marge brute de chaque catégorie de produits.</p>
+  <p><strong>Pourquoi c'est utile.</strong> Une catégorie qui vend beaucoup peut rapporter peu. Connaître la marge par catégorie aide KDou à choisir où concentrer son offre et ses promotions, et à décider quelles gammes développer ou réduire pour améliorer sa rentabilité.</p>
+  <pre>SELECT c.NomCateg AS Categorie,
+  Round(Sum(dc.Quantité * p.CoutAchat
+        * (c.CoefMarge * (1 - dc.[Remise (%)]) - 1)), 2) AS Marge_brute
+FROM (DetailCommande AS dc
+  INNER JOIN Produit AS p ON dc.[Réf produit] = p.RefProd)
+  INNER JOIN Categorie AS c ON p.CodeCateg = c.CodeCateg
+GROUP BY c.NomCateg;</pre>
+  <p><strong>Comment lire la requête.</strong> Pour chaque ligne de commande, on calcule la marge : prix de vente remisé moins coût d'achat, multiplié par la quantité. Le <code>GROUP BY</code> additionne ensuite ces marges par catégorie.</p>
+  <p><strong>Résultat.</strong></p>
+  <div class="table-wrap">
+      <tr><th>Catégorie</th><th>Marge brute (€)</th></tr>
+      <img src="img/requete-meryan.png">
+  </div>
+</article>
+            
         </section>
     </main>
     <footer>
