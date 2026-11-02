@@ -142,10 +142,25 @@ FROM (((DetailCommande AS dc
 GROUP BY ps.PaysFR, ps.UE
 ORDER BY Round(Sum(dc.Quantité * p.CoutAchat * c.CoefMarge * (1 - dc.[Remise (%)])), 2) DESC;</pre>
                 <p><strong>Résultat:</strong></p>
-                <div class="resultat">
-                    <img src="img/requeteyanis.png">
+                <div class="table-wrap">
+                    <img src="img/requeteyanis.png" alt="resultat de la requete de Yanis">
                 </div>
             </article>
+            <article>
+  <h3>Léa : quels sont les invendus ?</h3>
+  <p><strong>Objectif.</strong> Identifier les produits qui n'ont jamais été commandés.</p>
+  <p><strong>Pourquoi c'est utile.</strong> Cela permet à KDou de repérer les produits qui ne se vendent pas du tout et restent en stock. L'objectif est d'appliquer des baisses de prix ou des promotions pour vider ces stocks, réduire le gaspillage et libérer de la place pour des produits plus attractifs ou éco-responsables.</p>
+  <pre>SELECT p.NomProd, p.UnitStock, c.NomCateg
+FROM (Produit AS p
+  INNER JOIN Categorie AS c ON p.CodeCateg = c.CodeCateg)
+  LEFT JOIN DetailCommande AS dc ON p.RefProd = dc.[Réf produit]
+WHERE dc.[Réf produit] IS NULL;</pre>
+  <p><strong>Comment lire la requête.</strong> Le <code>LEFT JOIN</code> garde tous les produits, même ceux qui n'apparaissent dans aucune commande. Pour ceux-là, les colonnes de <code>DetailCommande</code> valent <code>NULL</code>, ce que le filtre <code>IS NULL</code> isole. La jointure avec <code>Categorie</code> ajoute le nom de la catégorie.</p>
+  <p><strong>Résultat.</strong> Extrait des premiers produits invendus :</p>
+  <div class="table-wrap">
+    <img src="img/requete-lea.webp" alt="Extrait des produits jamais commandés, avec leur stock et leur catégorie">
+  </div>
+</article>
         </section>
     </main>
     <footer>
