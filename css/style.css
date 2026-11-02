@@ -52,3 +52,25 @@ th, td { text-align: left; padding: 8px 12px; border-bottom: 1px solid var(--lig
 footer { padding-top: 40px; padding-bottom: 56px; color: var(--discret); font-size: .9rem; }
 a:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
 img { max-width: 100%; height: auto; }
+
+#boutonBottomToTheTop {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  z-index: 1000;
+  background-color: #333;
+  color: white;
+  border: none;
+  padding: 10px 15px;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 16px;
+  /* Optionnel : cacher le bouton par défaut et l'animer */
+  opacity: 0.8;
+  transition: opacity 0.3s;
+}
+
+#boutonBottomToTheTop:hover {
+  opacity: 1;
+  background-color: #000;
+}
