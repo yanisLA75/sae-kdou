@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<htlm lang="fr">
+<html lang="fr">
 <head>
 <meta charset="UTF-8">
   <title>SAE S1-04 – KDou Rapport collectif</title>
@@ -12,7 +12,7 @@
   <h1>site rapport  collectif</h1>
 <header>
   <h1>KDou : ce que révèlent ses données</h1>
-  <p class="intro">SAE S1-04, conception et interrogation d'une base de données. Rapport collectif de l'équipe <span> composer de Yanis Laoula Younes Léa et Merian de la classe 108</span>, IUT Paris Rives de Seine.</p>
+  <p class="intro"> SAE S1-04, conception et interrogation d'une base de données. Rapport collectif de l'équipe composer de Yanis Laoula, Younes Léa et Merian de la classe 108, IUT Paris Rives de Seine.</p>
   <nav>
     <a href="#contexte">Contexte</a>
     <a href="#origine">Origine des produits</a>
@@ -81,7 +81,78 @@ ORDER BY Year(cd.DateCde);</pre>
   </article>
 </section>
   
-</body>
+<section id="offre">
+  <h2>Offre commerciale</h2>
+  <article>
+    <h3>Combien de produits carnés n'ont jamais été commandés ?</h3>
+    <p><strong>Pourquoi c'est utile.</strong> Des produits qui ne se vendent pas occupent du stock et un espace au catalogue. Pour la viande, c'est aussi un enjeu écologique : mieux vaut ne proposer que ce qui trouve preneur.</p>
+    <pre>SELECT Count(*) AS Nb_viandes_non_commandees
+FROM (Produit AS p
+  INNER JOIN Categorie AS c ON p.CodeCateg = c.CodeCateg)
+  LEFT JOIN DetailCommande AS dc ON p.RefProd = dc.[Réf produit]
+WHERE c.NomCateg = "Viandes" AND dc.[Réf produit] IS NULL;</pre>
+    <p><strong>Résultat :</strong> 2</p>
+    <p><strong>Comment lire la requête.</strong> Le <code>LEFT JOIN</code> garde tous les produits, même sans commande. Pour ceux-là, les colonnes de <code>DetailCommande</code> valent <code>NULL</code>, ce que le filtre <code>IS NULL</code> isole. « Actuellement » est interprété comme « jamais commandé ».</p>
+  </article>
+</section>
 
-  
-</htlm>
+<section id="partenariat">
+  <h2>Partenariat client</h2>
+  <article>
+    <h3>Un client pilote a-t-il autant de commandes qu'un de ses partenaires ?</h3>
+    <p><strong>Pourquoi c'est utile.</strong> Les pilotes organisent les livraisons groupées. Comparer leur activité à celle de leurs partenaires indique si le réseau repose sur un client réellement actif.</p>
+    <pre>-- Requête enregistrée « NbCommandes »
+SELECT CodeCli, Count(*) AS NbCde
+FROM Commande
+GROUP BY CodeCli;
+
+-- Requête finale
+SELECT pilote.Societe AS Pilote, part.Societe AS Partenaire,
+       n1.NbCde AS Cde_pilote, n2.NbCde AS Cde_partenaire
+FROM ((Clientele AS pilote
+  INNER JOIN Clientele AS part ON pilote.CodeCli = part.CodeCliPart)
+  INNER JOIN NbCommandes AS n1 ON pilote.CodeCli = n1.CodeCli)
+  INNER JOIN NbCommandes AS n2 ON part.CodeCli = n2.CodeCli
+WHERE n1.NbCde = n2.NbCde;</pre>
+    <p><strong>Résultat.</strong> Oui, une seule paire :</p>
+    <div class="table-wrap">
+      <table>
+        <tr><th>Pilote</th><th>Partenaire</th><th>Commandes du pilote</th><th>Commandes du partenaire</th></tr>
+        <tr><td>Le Nostradamus</td><td>Petite Épicerie</td><td>17</td><td>17</td></tr>
+      </table>
+    </div>
+    <p><strong>Comment lire la requête.</strong> La table des clients est utilisée deux fois sous deux noms (auto-jointure) : une fois pour le pilote, une fois pour le partenaire. On compare ensuite leurs nombres de commandes. Sur les 9 paires pilote-partenaire de la base, seule celle-ci est à égalité. Limite : un client sans aucune commande n'apparaît pas dans <code>NbCommandes</code>.</p>
+  </article>
+</section>
+
+<section id="membres">
+  <h2>Requêtes de l'équipe</h2>
+  <p>Chaque membre propose un indicateur sur le respect de l'environnement ou l'optimisation de l'offre : énoncé, intérêt pour KDou, requête SQL, résultat.</p>
+  <article>
+  <h3>Yanis : d'où viennent les ventes de KDou ?</h3>
+  <p><strong>Pourquoi c'est utile.</strong> Ce classement montre quels pays de fournisseurs génèrent le plus de chiffre d'affaires. Plus un produit vient de loin, plus son transport pèse sur l'environnement. KDou peut ainsi repérer les pays dont les ventes sont élevées et étudier des alternatives plus proches, pour renforcer son image éco-responsable.</p>
+  <pre>SELECT ps.PaysFR AS Pays, ps.UE,
+  Round(Sum(dc.Quantité * p.CoutAchat * c.CoefMarge
+        * (1 - dc.[Remise (%)])), 2) AS CA
+FROM (((DetailCommande AS dc
+  INNER JOIN Produit AS p ON dc.[Réf produit] = p.RefProd)
+  INNER JOIN Categorie AS c ON p.CodeCateg = c.CodeCateg)
+  INNER JOIN Fournisseur AS f ON p.NoFour = f.NoFour)
+  INNER JOIN Pays AS ps ON f.NoPays = ps.NoPays
+GROUP BY ps.PaysFR, ps.UE
+ORDER BY CA DESC;</pre>
+  <p><strong>Résultat.</strong> Extrait des 5 premiers pays :</p>
+  <div class="table-wrap">
+    <table>
+      <tr><th>Pays</th><th>UE</th><th>CA (€)</th></tr>
+      <tr><td>…</td><td>…</td><td>…</td></tr>
+    </table>
+  </div>
+</article>
+</section>
+</main>
+<footer>
+  SAE S1-04, BUT Informatique, IUT Paris Rives de Seine.
+</footer>
+</body>
+</html>
