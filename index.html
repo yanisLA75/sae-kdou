@@ -178,7 +178,33 @@ GROUP BY c.NomCateg;</pre>
       <img src="img/requete-meryan.png">
   </div>
 </article>
-            
+            <article>
+  <h3>Younes : quels sont les 5 fournisseurs hors UE qui génèrent le plus de CA ?</h3>
+  <p><Objectif. Classer les fournisseurs situés hors de l'Union européenne selon le chiffre d'affaires qu'ils génèrent.</p>
+  <p>Pourquoi c'est utile. Les fournisseurs hors UE impliquent des transports plus longs. Identifier les cinq principaux permet à KDou de mesurer sa dépendance aux importations lointaines et d'étudier des alternatives plus proches pour renforcer son image éco-responsable.</p>
+  <pre>SELECT TOP 5
+  Fournisseur.Societe AS Fournisseur,
+  Pays.PaysFR AS Pays,
+  Round(Sum(DetailCommande.Quantité * Produit.CoutAchat * Categorie.CoefMarge
+        * (1 - DetailCommande.[Remise (%)])), 2) AS CA
+FROM Pays
+INNER JOIN (Fournisseur
+  INNER JOIN (Categorie
+    INNER JOIN (Produit
+      INNER JOIN DetailCommande ON Produit.RefProd = DetailCommande.[Réf produit])
+    ON Categorie.CodeCateg = Produit.CodeCateg)
+  ON Fournisseur.NoFour = Produit.NoFour)
+ON Pays.NoPays = Fournisseur.NoPays
+WHERE Pays.UE <> "Membre"
+GROUP BY Fournisseur.Societe, Pays.PaysFR
+ORDER BY Sum(DetailCommande.Quantité * Produit.CoutAchat * Categorie.CoefMarge
+        * (1 - DetailCommande.[Remise (%)])) DESC;</pre>
+  <p><strong>Comment lire la requête.</strong> Les tables sont reliées de la ligne de commande jusqu'au pays du fournisseur. Le <code>WHERE</code> écarte les pays membres de l'UE, le <code>GROUP BY</code> additionne le CA de chaque fournisseur, et le tri décroissant avec <code>TOP 5</code> ne garde que les cinq premiers.</p>
+  <p><strong>Résultat.</strong></p>
+  <div class="table-wrap">
+    <img src="img/requete-younes.png" alt="Les 5 fournisseurs hors UE générant le plus de CA">
+  </div>
+</article>
         </section>
     </main>
     <footer>
